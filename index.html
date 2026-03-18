@@ -188,8 +188,17 @@ input:focus, select:focus { outline: none; border-color: var(--v); box-shadow: 0
         <img id="hdr-logo-img" src="" alt="Logo inmobiliaria" style="display:none;max-height:34px;max-width:100px;object-fit:contain;border-radius:4px;background:#fff;padding:2px 5px;margin-bottom:.25rem;">
         <div class="agencia-nombre" id="hdr-agencia"></div>
       </div>
+      <!-- Bloque bancos colaboradores — solo visible si viene ?bancos=si -->
+      <div id="hdr-bancos-box" style="display:none;background:rgba(255,255,255,.12);border-radius:10px;padding:.6rem 1rem;text-align:center;">
+        <div style="font-size:.65rem;color:rgba(255,255,255,.6);margin-bottom:.4rem;letter-spacing:.08em;text-transform:uppercase;">Entidades colaboradoras</div>
+        <div style="display:flex;gap:.5rem;align-items:center;justify-content:center;">
+          <img src="/gastoscompraventa/Logos/ING.png" alt="ING" style="max-height:28px;max-width:60px;object-fit:contain;background:#fff;border-radius:4px;padding:2px 5px;">
+          <img src="/gastoscompraventa/Logos/Abanca.png" alt="ABANCA" style="max-height:28px;max-width:60px;object-fit:contain;background:#fff;border-radius:4px;padding:2px 5px;">
+        </div>
+      </div>
       <!-- Bloque José Mª Gil — siempre visible -->
       <div class="hdr-logo">
+        <div style="font-size:.65rem;color:rgba(255,255,255,.6);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.2rem;">Teléfono para dudas</div>
         <div class="agencia-nombre">José Mª Gil</div>
         <div class="agencia-tel"><a href="tel:+34637623636" style="color:rgba(255,255,255,.7);text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.47 11.47 0 003.6.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.47 11.47 0 00.57 3.6 1 1 0 01-.25 1.01z"/></svg>637 623 636</a></div>
       </div>
@@ -228,6 +237,14 @@ input:focus, select:focus { outline: none; border-color: var(--v); box-shadow: 0
           <input type="number" id="precio" placeholder="Ej: 250000" min="1000" step="1000" oninput="actualizarIVAInmob()">
           <span class="unit">€</span>
         </div>
+      </div>
+      <div class="fg">
+        <label>¿Cuánto tienes ahorrado para la compra? (€)</label>
+        <div class="input-with-unit">
+          <input type="number" id="ahorros" placeholder="Ej: 50000" min="0" step="1000">
+          <span class="unit">€</span>
+        </div>
+        <div class="hint">Incluye todo el dinero disponible para esta operación.</div>
       </div>
       <div class="fg">
         <label>Tipo de vivienda</label>
@@ -461,6 +478,9 @@ var CANAL_ORIGEN = '';
     CANAL_ORIGEN = params.get('agencia');
     document.getElementById('hdr-agencia').textContent = CANAL_ORIGEN;
     document.getElementById('hdr-inmob-box').style.display = 'block';
+  }
+  if (params.get('bancos') === 'si') {
+    document.getElementById('hdr-bancos-box').style.display = 'block';
   }
   if (params.get('logo')) {
     var logoImg = document.getElementById('hdr-logo-img');
@@ -940,6 +960,8 @@ function calcular() {
   var financiacion = Math.round(precio * pctFin / 100);
   var liquidezNecesaria = totalNecesario - financiacion;
 
+  var ahorros = parseFloat(document.getElementById('ahorros').value) || 0;
+
   return {
     grupos: grupos, alertas: alertas,
     totalGastos: totalGastos, totalImpuestos: totalImpuestos,
@@ -947,7 +969,7 @@ function calcular() {
     precio: precio, tipo: tipo, hip: hip, compradores: compradores,
     pctInmob: pctInmob, pctFin: pctFin, financiacion: financiacion,
     totalNecesario: totalNecesario, liquidezNecesaria: liquidezNecesaria,
-    viaAgenteVal: viaAgenteVal
+    viaAgenteVal: viaAgenteVal, ahorros: ahorros
   };
 }
 
@@ -1033,6 +1055,22 @@ function renderResultado(res) {
     html += '<div class="liq-row"><span>− Financiación banco (' + res.pctFin + '%)</span><span class="liq-val neg">− ' + fmt(res.financiacion) + '</span></div>';
   }
   html += '<div class="liq-row sep total-liq"><span>💰 Necesitas tener</span><span class="liq-val">' + fmt(res.liquidezNecesaria) + '</span></div>';
+
+  // Indicador de ahorros
+  if (res.ahorros > 0) {
+    var diferencia = res.ahorros - res.liquidezNecesaria;
+    if (diferencia >= 0) {
+      html += '<div class="liq-row" style="margin-top:.5rem;background:rgba(255,255,255,.1);border-radius:8px;padding:.5rem .7rem;">';
+      html += '<span>✅ Con tus ahorros de ' + fmt(res.ahorros) + ' tienes suficiente</span>';
+      html += '<span class="liq-val" style="color:#7fffb0;">Te sobran ' + fmt(diferencia) + '</span>';
+      html += '</div>';
+    } else {
+      html += '<div class="liq-row" style="margin-top:.5rem;background:rgba(255,100,100,.15);border-radius:8px;padding:.5rem .7rem;">';
+      html += '<span>⚠️ Con tus ahorros de ' + fmt(res.ahorros) + ' no tienes suficiente</span>';
+      html += '<span class="liq-val" style="color:#ffaaaa;">Te faltan ' + fmt(Math.abs(diferencia)) + '</span>';
+      html += '</div>';
+    }
+  }
   html += '</div>';
   html += '</div>';
 
