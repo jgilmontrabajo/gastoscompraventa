@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Compraventa · Andalucía</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --v:   #1a6b45;
+  --v2:  #2d9965;
+  --v3:  #e6f4ec;
+  --d:   #c8952a;
+  --d2:  #fef3e2;
+  --m:   #1e1409;
+  --g:   #6b6259;
+  --c:   #f5f0e8;
+  --c2:  #eae3d5;
+  --w:   #fdfaf5;
+  --r:   #c0392b;
+  --az:  #1a4a6b;
+  --az2: #eaf2fb;
+  --sh:  0 2px 20px rgba(30,20,9,.08);
+  --sh2: 0 8px 40px rgba(30,20,9,.14);
+}
+
+body { font-family: 'Outfit', sans-serif; background: var(--c); color: var(--m); min-height: 100vh; font-size: 15px; }
+
+/* HEADER */
+.hdr { background: var(--v); padding: 2rem 2rem 1.8rem; position: relative; overflow: hidden; }
+.hdr::after { content: ''; position: absolute; right: -4rem; top: -4rem; width: 22rem; height: 22rem; background: radial-gradient(circle, rgba(255,255,255,.07) 0%, transparent 70%); pointer-events: none; }
+.hdr-inner { max-width: 860px; margin: 0 auto; position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; }
+.hdr-left .hdr-tag { font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: rgba(255,255,255,.6); margin-bottom: .4rem; }
+.hdr-left h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; color: #fff; line-height: 1.1; }
+.hdr-left .hdr-sub { font-size: .8rem; color: rgba(255,255,255,.6); margin-top: .3rem; }
+.hdr-logo { background: rgba(255,255,255,.12); border-radius: 10px; padding: .6rem 1rem; text-align: right; }
+.hdr-logo .agencia-nombre { font-weight: 700; color: #fff; font-size: .95rem; }
+.hdr-logo .agencia-tel { font-size: .8rem; color: rgba(255,255,255,.7); margin-top: .2rem; }
+.hdr-logo img { max-height: 36px; max-width: 120px; object-fit: contain; display: block; margin-bottom: .3rem; }
+
+/* LAYOUT */
+.wrap { max-width: 860px; margin: 0 auto; padding: 1.8rem 1.2rem 4rem; }
+
+/* PASOS */
+.steps { display: flex; gap: .4rem; margin-bottom: 1.8rem; align-items: center; }
+.step-dot { width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 600; background: var(--c2); color: var(--g); transition: all .25s; flex-shrink: 0; }
+.step-dot.active { background: var(--v); color: #fff; }
+.step-dot.done { background: var(--v3); color: var(--v); }
+.step-line { flex: 1; height: 2px; background: var(--c2); margin: auto; min-width: 8px; max-width: 36px; transition: background .25s; }
+.step-line.done { background: var(--v2); }
+
+/* CARD */
+.card { background: var(--w); border-radius: 16px; padding: 1.6rem; box-shadow: var(--sh); border: 1px solid var(--c2); margin-bottom: 1.2rem; animation: fadeUp .3s ease both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.card-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 700; color: var(--v); margin-bottom: 1.1rem; padding-bottom: .5rem; border-bottom: 2px solid var(--v3); display: flex; align-items: center; gap: .5rem; }
+
+/* FORM */
+.fg { margin-bottom: 1rem; }
+.fg label { display: block; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--g); margin-bottom: .4rem; }
+.fg .hint { font-size: .75rem; color: var(--d); margin-top: .35rem; font-style: italic; }
+input[type=text], input[type=number], input[type=date], select {
+  width: 100%; padding: .6rem .9rem; border: 1.5px solid var(--c2); border-radius: 9px;
+  background: var(--c); font-family: 'Outfit', sans-serif; font-size: .95rem; color: var(--m);
+  transition: border-color .2s, box-shadow .2s;
+}
+input:focus, select:focus { outline: none; border-color: var(--v); box-shadow: 0 0 0 3px rgba(26,107,69,.1); }
+.input-with-unit { position: relative; }
+.input-with-unit input { padding-right: 2.5rem; }
+.input-with-unit .unit { position: absolute; right: .9rem; top: 50%; transform: translateY(-50%); font-size: .85rem; color: var(--g); pointer-events: none; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media(max-width:540px){ .grid2 { grid-template-columns: 1fr; } }
+
+/* Radio cards */
+.radio-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: .6rem; }
+.radio-cards.cols2 { grid-template-columns: 1fr 1fr; }
+@media(max-width:480px){ .radio-cards { grid-template-columns: 1fr; } .radio-cards.cols2 { grid-template-columns: 1fr 1fr; } }
+.rcard { border: 2px solid var(--c2); border-radius: 11px; padding: .8rem 1rem; cursor: pointer; transition: all .18s; display: flex; flex-direction: column; gap: .2rem; }
+.rcard input { display: none; }
+.rcard:has(input:checked) { border-color: var(--v); background: var(--v3); }
+.rcard-title { font-weight: 600; font-size: .88rem; }
+.rcard-sub { font-size: .73rem; color: var(--g); }
+.rcard:has(input:checked) .rcard-sub { color: var(--v2); }
+
+/* Chips */
+.chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+.chip { display: inline-flex; align-items: center; gap: .35rem; padding: .4rem .85rem; border-radius: 50px; border: 1.5px solid var(--c2); background: var(--c); font-size: .82rem; cursor: pointer; transition: all .18s; color: var(--m); user-select: none; }
+.chip input { display: none; }
+.chip:has(input:checked) { border-color: var(--v); background: var(--v3); color: var(--v); font-weight: 600; }
+.chip .ck { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: .6rem; flex-shrink: 0; }
+.chip:has(input:checked) .ck::after { content: '✓'; }
+
+/* Compradores */
+.comprador-block { background: var(--c); border-radius: 12px; padding: 1.1rem; border: 1px solid var(--c2); margin-bottom: .8rem; }
+.comprador-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: .9rem; }
+.comprador-num { font-weight: 600; font-size: .82rem; color: var(--v); background: var(--v3); padding: .2rem .65rem; border-radius: 50px; }
+.btn-remove { background: none; border: none; color: var(--r); cursor: pointer; font-size: .78rem; padding: .2rem .5rem; border-radius: 6px; transition: background .15s; }
+.btn-remove:hover { background: #fde8e8; }
+.btn-add { width: 100%; padding: .65rem; border-radius: 9px; border: 2px dashed var(--c2); background: none; color: var(--g); font-family: 'Outfit', sans-serif; font-size: .85rem; cursor: pointer; transition: all .2s; }
+.btn-add:hover { border-color: var(--v); color: var(--v); background: var(--v3); }
+
+/* Nav */
+.nav { display: flex; gap: .8rem; margin-top: 1.4rem; }
+.btn-sec { flex: 1; padding: .75rem; border-radius: 10px; border: 2px solid var(--c2); background: var(--w); font-family: 'Outfit', sans-serif; font-size: .92rem; color: var(--g); cursor: pointer; transition: all .2s; font-weight: 500; }
+.btn-sec:hover { border-color: var(--v); color: var(--v); }
+.btn-pri { flex: 2; padding: .75rem; border-radius: 10px; border: none; background: var(--v); font-family: 'Outfit', sans-serif; font-size: .92rem; color: #fff; cursor: pointer; transition: background .2s; font-weight: 600; }
+.btn-pri:hover { background: var(--v2); }
+.btn-pri:active { transform: scale(.98); }
+
+/* RESULTADO */
+#pantalla-resultado { display: none; }
+.res-hero { background: linear-gradient(135deg, var(--v) 0%, #0f4a2e 100%); border-radius: 16px; padding: 1.8rem; color: #fff; margin-bottom: 1rem; box-shadow: var(--sh2); }
+.res-hero-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.4rem; }
+.res-hero .label { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; opacity: .65; margin-bottom: .25rem; }
+.res-hero .total { font-family: 'Cormorant Garamond', serif; font-size: 2.8rem; font-weight: 700; line-height: 1; }
+.res-hero .sub { font-size: .8rem; opacity: .6; margin-top: .25rem; }
+.pct-badge { font-size: 1.3rem; font-weight: 700; background: rgba(255,255,255,.15); border-radius: 10px; padding: .4rem .9rem; display: inline-block; }
+.pct-label { font-size: .7rem; opacity: .6; margin-top: .2rem; text-align: right; }
+
+/* Caja de liquidez */
+.liquidez-box { background: rgba(255,255,255,.1); border-radius: 12px; padding: 1.1rem 1.3rem; }
+.liq-title { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; opacity: .7; margin-bottom: .8rem; font-weight: 600; }
+.liq-row { display: flex; justify-content: space-between; align-items: center; padding: .3rem 0; font-size: .88rem; opacity: .85; }
+.liq-row.sep { border-top: 1px solid rgba(255,255,255,.2); margin-top: .4rem; padding-top: .7rem; }
+.liq-row.total-liq { font-weight: 800; font-size: 1.1rem; opacity: 1; }
+.liq-row.total-liq .liq-val { color: #ffd166; }
+.liq-row .liq-val { font-weight: 600; }
+.liq-row .liq-val.neg { color: #ff9999; }
+
+/* Op info tags */
+.op-info { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.op-tag { background: var(--w); border: 1px solid var(--c2); border-radius: 50px; padding: .28rem .75rem; font-size: .76rem; color: var(--g); }
+.op-tag strong { color: var(--m); }
+
+/* Grupos */
+.grupo { margin-bottom: 1rem; }
+.grupo-hdr { font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--v); padding: .45rem .8rem; background: var(--v3); border-radius: 8px 8px 0 0; border: 1px solid #c8e8d8; border-bottom: none; }
+.grupo-body { background: var(--w); border-radius: 0 0 10px 10px; border: 1px solid var(--c2); overflow: hidden; }
+.gasto-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; padding: .8rem 1rem; border-bottom: 1px solid var(--c2); transition: background .15s; }
+.gasto-row:last-child { border-bottom: none; }
+.gasto-row:hover { background: var(--c); }
+.gasto-info { flex: 1; }
+.gasto-nombre { font-weight: 600; font-size: .88rem; margin-bottom: .18rem; }
+.gasto-detalle { font-size: .75rem; color: var(--g); line-height: 1.5; }
+.gasto-importe { font-weight: 700; font-size: .98rem; color: var(--v); white-space: nowrap; padding-top: .1rem; }
+.gasto-importe.cero { color: var(--g); font-weight: 400; font-style: italic; font-size: .85rem; }
+.subtotal-grupo { background: #f0faf4; padding: .5rem 1rem; font-size: .8rem; text-align: right; color: var(--v); font-weight: 600; border-top: 2px solid var(--v3); }
+
+/* Alertas */
+.alertas { margin-bottom: 1rem; display: flex; flex-direction: column; gap: .5rem; }
+.alerta { border-radius: 10px; padding: .8rem 1rem; font-size: .82rem; line-height: 1.55; }
+.alerta.ok { background: var(--v3); border: 1.5px solid #9fd3b5; color: #1a5235; }
+.alerta.aviso { background: var(--d2); border: 1.5px solid #e8c87a; color: #7a5210; }
+.alerta.info { background: var(--az2); border: 1.5px solid #a8c8e8; color: #1a3a5a; }
+
+/* Acciones */
+.acciones { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-top: 1rem; }
+@media(max-width:480px){ .acciones { grid-template-columns: 1fr; } }
+.btn-pdf { padding: .8rem 1rem; border-radius: 10px; border: none; background: var(--v); color: #fff; font-family: 'Outfit', sans-serif; font-size: .88rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem; transition: background .2s; }
+.btn-pdf:hover { background: var(--v2); }
+.btn-wa { padding: .8rem 1rem; border-radius: 10px; border: none; background: #25D366; color: #fff; font-family: 'Outfit', sans-serif; font-size: .88rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem; transition: background .2s; }
+.btn-wa:hover { background: #1ebe5d; }
+.btn-wa:disabled { background: #aaa; cursor: not-allowed; }
+.btn-nueva-full { width: 100%; padding: .7rem; border-radius: 10px; border: 2px solid var(--c2); background: var(--w); font-family: 'Outfit', sans-serif; font-size: .88rem; color: var(--g); cursor: pointer; font-weight: 500; margin-top: .5rem; transition: all .2s; }
+.btn-nueva-full:hover { border-color: var(--v); color: var(--v); }
+
+/* Nota legal */
+.nota { background: var(--m); color: rgba(255,255,255,.55); border-radius: 12px; padding: 1.1rem 1.3rem; font-size: .76rem; line-height: 1.7; margin-top: 1rem; }
+.nota strong { color: var(--d); }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-left">
+      <div class="hdr-tag">Andalucía · Normativa 2025–2026</div>
+      <h1>Calculadora de gastos de compraventa</h1>
+      <div class="hdr-sub">Gastos, financiación y liquidez necesaria</div>
+    </div>
+    <div style="display:flex;gap:1rem;align-items:flex-start;">
+      <!-- Bloque inmobiliaria — solo visible si viene ?agencia= -->
+      <div id="hdr-inmob-box" style="display:none;background:rgba(255,255,255,.12);border-radius:10px;padding:.6rem 1rem;text-align:center;">
+        <img id="hdr-logo-img" src="" alt="Logo inmobiliaria" style="display:none;max-height:34px;max-width:100px;object-fit:contain;border-radius:4px;background:#fff;padding:2px 5px;margin-bottom:.25rem;">
+        <div class="agencia-nombre" id="hdr-agencia"></div>
+      </div>
+      <!-- Bloque José Mª Gil — siempre visible -->
+      <div class="hdr-logo">
+        <div class="agencia-nombre">José Mª Gil</div>
+        <div class="agencia-tel"><a href="tel:+34637623636" style="color:rgba(255,255,255,.7);text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.47 11.47 0 003.6.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.47 11.47 0 00.57 3.6 1 1 0 01-.25 1.01z"/></svg>637 623 636</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="steps" id="steps-bar">
+    <div class="step-dot active" id="sd1">1</div>
+    <div class="step-line" id="sl1"></div>
+    <div class="step-dot" id="sd2">2</div>
+    <div class="step-line" id="sl2"></div>
+    <div class="step-dot" id="sd3">3</div>
+    <div class="step-line" id="sl3"></div>
+    <div class="step-dot" id="sd4">4</div>
+    <div class="step-line" id="sl4"></div>
+    <div class="step-dot" id="sd5">5</div>
+  </div>
+
+  <!-- PASO 1: OPERACIÓN -->
+  <div id="paso1">
+    <div class="card">
+      <div class="card-title">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Datos de la operación
+      </div>
+      <!-- Fecha oculta — se rellena automáticamente -->
+      <input type="hidden" id="fecha">
+      <!-- Teléfono oculto — se pide en pantalla 2 si quiere estudio hipoteca -->
+      <input type="hidden" id="tel-cliente">
+      <div class="fg">
+        <label>Precio de compra (€)</label>
+        <div class="input-with-unit">
+          <input type="number" id="precio" placeholder="Ej: 250000" min="1000" step="1000" oninput="actualizarIVAInmob()">
+          <span class="unit">€</span>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Tipo de vivienda</label>
+        <select id="tipo" onchange="actualizarIVAInmob()">
+          <option value="segunda">Segunda mano — ITP · Junta de Andalucía</option>
+          <option value="nueva">Obra nueva — IVA 10% + AJD</option>
+          <option value="vpo">VPO — IVA 4% + AJD 0,1%</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Financiación hipotecaria</label>
+        <select id="hipoteca" onchange="actualizarHipotecaSelect()">
+          <option value="si">Sí, con hipoteca</option>
+          <option value="no">No, al contado</option>
+        </select>
+      </div>
+      <div class="nav">
+        <button class="btn-pri" onclick="irPaso(2)">Siguiente: Gastos operación →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 2: GASTOS OPERACIÓN -->
+  <div id="paso2" class="hidden">
+    <div class="card">
+      <div class="card-title">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Gastos de escritura y operación
+      </div>
+      <p style="font-size:.82rem;color:var(--g);margin-bottom:1.1rem;">Todos los importes son estimaciones con valores habituales. <strong style="color:var(--v)">Puedes modificarlos</strong> si conoces los datos reales.</p>
+
+      <!-- Notaría -->
+      <div class="fg">
+        <label>Notaría — Escritura de compraventa <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--d)">✏️ editable</span></label>
+        <div class="input-with-unit">
+          <input type="number" id="imp-notaria" value="700" min="0" step="50">
+          <span class="unit">€</span>
+        </div>
+        <div class="hint">Aranceles regulados (R.D. 1426/1989). Varía según precio y número de folios. Rango habitual: 600–1.000 €.</div>
+      </div>
+
+      <!-- Registro -->
+      <div class="fg">
+        <label>Registro de la Propiedad <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--d)">✏️ editable</span></label>
+        <div class="input-with-unit">
+          <input type="number" id="imp-registro" value="500" min="0" step="50">
+          <span class="unit">€</span>
+        </div>
+        <div class="hint">Aranceles regulados (R.D. 1427/1989). Inscripción del nuevo titular. Rango habitual: 400–700 €.</div>
+      </div>
+
+      <!-- Gestoría -->
+      <div class="fg">
+        <label>Gestoría administrativa <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--d)">✏️ editable</span></label>
+        <div class="input-with-unit">
+          <input type="number" id="imp-gestoria" value="400" min="0" step="50">
+          <span class="unit">€</span>
+        </div>
+        <div class="hint">Tramitación de liquidación de impuestos e inscripción registral. Rango habitual: 300–500 €.</div>
+      </div>
+
+      <!-- Nota simple -->
+      <div class="fg">
+        <label>Nota simple del Registro de la Propiedad <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--d)">✏️ editable</span></label>
+        <div class="input-with-unit">
+          <input type="number" id="imp-nota-simple" value="10" min="0" step="1">
+          <span class="unit">€</span>
+        </div>
+        <div class="hint">Consulta previa para verificar cargas y titularidad antes de la firma. Coste fijo regulado: 3–10 €.</div>
+      </div>
+
+      <!-- Inmobiliaria -->
+      <div class="fg">
+        <label>Honorarios de la inmobiliaria <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--d)">✏️ editable</span></label>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <div class="input-with-unit" style="max-width:130px;">
+            <input type="number" id="pct-inmobiliaria" value="3" min="0" max="20" step="0.1" oninput="actualizarIVAInmob()">
+            <span class="unit">%</span>
+          </div>
+          <span style="font-size:.82rem;color:var(--g);">sobre el precio de compra</span>
+        </div>
+        <div id="resumen-inmob" style="margin-top:.5rem;font-size:.83rem;color:var(--g);background:var(--c);border-radius:8px;padding:.5rem .75rem;"></div>
+        <div class="hint">⚠️ Por defecto 3% + IVA 21%. Confirma el porcentaje con tu inmobiliaria.</div>
+      </div>
+
+      <!-- Hipoteca gastos -->
+      <div id="bloque-hipoteca-gastos">
+        <hr style="border:none;border-top:1px solid var(--c2);margin:1rem 0;">
+
+        <!-- Viabilidad hipoteca -->
+        <div class="fg">
+          <label>Estudio de viabilidad hipotecaria</label>
+          <div class="radio-cards cols2">
+            <label class="rcard"><input type="radio" name="via-agente" value="si" checked onchange="actualizarBloqueHipoteca()"><span class="rcard-title">Sí, me interesa</span><span class="rcard-sub">Sin compromiso ni coste</span></label>
+            <label class="rcard"><input type="radio" name="via-agente" value="no" onchange="actualizarBloqueHipoteca()"><span class="rcard-title">No, gracias</span><span class="rcard-sub">Prefiero pagar a un broker</span></label>
+          </div>
+        </div>
+
+        <!-- Bloque SÍ: móvil y correo -->
+        <div id="bloque-banco-agente">
+          <div class="fg">
+            <label>Si quieres que estudiemos la viabilidad de tu hipoteca deja tu nº de móvil</label>
+            <input type="tel" id="tel-viabilidad" placeholder="612 345 678" style="background:var(--c);border:1.5px solid var(--c2);border-radius:8px;padding:.65rem .9rem;font-size:.95rem;font-family:inherit;color:var(--m);width:100%;transition:border-color .2s;" onfocus="this.style.borderColor='var(--v)'" onblur="this.style.borderColor='var(--c2)'" oninput="mostrarEmailSiHayTel()">
+          </div>
+          <div id="bloque-email-viabilidad" class="hidden">
+            <div class="fg">
+              <label>Correo electrónico</label>
+              <input type="email" id="email-viabilidad" placeholder="ejemplo@correo.com" style="background:var(--c);border:1.5px solid var(--c2);border-radius:8px;padding:.65rem .9rem;font-size:.95rem;font-family:inherit;color:var(--m);width:100%;transition:border-color .2s;" onfocus="this.style.borderColor='var(--v)'" onblur="this.style.borderColor='var(--c2)'">
+              <div class="hint">Te enviaremos los resultados de este estudio. Sin spam, sin compromiso.</div>
+            </div>
+          </div>
+          <div id="aviso-sin-gastos" class="alerta ok" style="display:none;"></div>
+        </div>
+
+        <!-- Bloque NO: coste broker dinámico -->
+        <div id="bloque-coste-estudio" class="hidden">
+          <div class="fg">
+            <label>No, prefiero pagar a un broker o financiera</label>
+            <div class="alerta aviso" style="margin-bottom:.75rem;">⚠️ El coste estimado de un broker o financiera se ha añadido a tus gastos: <strong id="txt-coste-broker">—</strong></div>
+            <input type="hidden" id="imp-estudio-hipoteca" value="2500">
+          </div>
+        </div>
+
+        <div class="fg" id="fg-apertura">
+          <label>Comisión de apertura del banco</label>
+          <div class="radio-cards cols2">
+            <label class="rcard"><input type="radio" name="apertura" value="no" checked><span class="rcard-title">Sin comisión</span><span class="rcard-sub">El banco no la aplica</span></label>
+            <label class="rcard"><input type="radio" name="apertura" value="si"><span class="rcard-title">Con comisión</span><span class="rcard-sub">Introducir porcentaje</span></label>
+          </div>
+        </div>
+        <div class="fg hidden" id="fg-pct-apertura">
+          <label>Porcentaje de comisión de apertura <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--d)">✏️ editable</span></label>
+          <div class="input-with-unit">
+            <input type="number" id="pct-apertura" value="0.5" min="0" max="5" step="0.1">
+            <span class="unit">%</span>
+          </div>
+        </div>
+
+        <!-- Tasación -->
+        <div class="fg">
+          <label>Tasación oficial de la vivienda <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--d)">✏️ editable</span></label>
+          <div class="input-with-unit">
+            <input type="number" id="imp-tasacion" value="400" min="0" step="50">
+            <span class="unit">€</span>
+          </div>
+          <div class="hint">Valoración por tasador homologado por el Banco de España. A cargo siempre del comprador (art. 14 Ley 5/2019). Rango habitual: 300–600 €.</div>
+        </div>
+      </div>
+
+      <div class="nav">
+        <button class="btn-sec" onclick="irPaso(1)">← Atrás</button>
+        <button class="btn-pri" onclick="irPaso(3)">Siguiente: Financiación →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 3: FINANCIACIÓN -->
+  <div id="paso3" class="hidden">
+    <div class="card">
+      <div class="card-title">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+        Financiación bancaria
+      </div>
+
+      <div id="bloque-financiacion-si">
+        <p style="font-size:.82rem;color:var(--g);margin-bottom:1.1rem;">Indica qué porcentaje del precio de compra financia el banco. Normalmente el 80%, aunque puede variar.</p>
+        <div class="fg">
+          <label>Porcentaje que financia el banco</label>
+          <div class="input-with-unit">
+            <input type="number" id="pct-financiacion" value="80" min="1" max="100" step="1">
+            <span class="unit">%</span>
+          </div>
+          <div class="hint">El banco suele financiar hasta el 80% del valor de tasación o compraventa (el menor de los dos).</div>
+        </div>
+      </div>
+
+      <div id="bloque-financiacion-no" class="hidden">
+        <div class="alerta info" style="margin-bottom:0">ℹ️ Operación al contado. El comprador debe disponer del 100% del precio más todos los gastos.</div>
+      </div>
+
+      <div class="nav">
+        <button class="btn-sec" onclick="irPaso(2)">← Atrás</button>
+        <button class="btn-pri" onclick="irPaso(4)">Siguiente: Compradores →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 4: COMPRADORES -->
+  <div id="paso4" class="hidden">
+    <div class="card">
+      <div class="card-title">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Compradores
+      </div>
+      <p style="font-size:.82rem;color:var(--g);margin-bottom:1.1rem;">Cada comprador puede tener un perfil fiscal distinto que determine su tipo impositivo.</p>
+      <div id="compradores-lista"></div>
+      <button class="btn-add" onclick="addComprador()">+ Añadir otro comprador</button>
+      <div class="nav">
+        <button class="btn-sec" onclick="irPaso(3)">← Atrás</button>
+        <button class="btn-pri" onclick="irPaso(5)">Siguiente: Revisar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 5: REVISIÓN -->
+  <div id="paso5" class="hidden">
+    <div class="card">
+      <div class="card-title">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Revisión de datos
+      </div>
+      <div id="resumen-revision" style="font-size:.87rem;line-height:2;color:var(--g);"></div>
+      <div class="nav">
+        <button class="btn-sec" onclick="irPaso(4)">← Atrás</button>
+        <button class="btn-pri" onclick="calcularYMostrar()">Ver desglose completo →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="pantalla-resultado"></div>
+
+</div>
+
+<script>
+// ── Config desde URL ──
+var CANAL_ORIGEN = '';
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('agencia')) {
+    CANAL_ORIGEN = params.get('agencia');
+    document.getElementById('hdr-agencia').textContent = CANAL_ORIGEN;
+    document.getElementById('hdr-inmob-box').style.display = 'block';
+  }
+  if (params.get('logo')) {
+    var logoImg = document.getElementById('hdr-logo-img');
+    var logoUrl = params.get('logo');
+    logoImg.style.display = 'block';
+    logoImg.onerror = function() {
+      if (this.src.indexOf('wsrv.nl') === -1) {
+        this.src = 'https://wsrv.nl/?url=' + encodeURIComponent(logoUrl) + '&w=260&h=88&fit=inside&output=png';
+      } else {
+        this.style.display = 'none';
+      }
+    };
+    logoImg.src = logoUrl;
+  }
+  if (!CANAL_ORIGEN && params.get('canal')) CANAL_ORIGEN = params.get('canal');
+  if (!CANAL_ORIGEN && params.get('utm_source')) CANAL_ORIGEN = params.get('utm_source');
+})();
+
+var AGENTE_NOMBRE = 'José Mª Gil';
+var AGENTE_TEL = '637 623 636';
+
+// ── Estado ──
+var state = { paso: 1, compradores: [] };
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+
+  // Forzar estado inicial: paso 1 visible, resto ocultos
+  var pasoIds = ['paso1','paso2','paso3','paso4','paso5'];
+  for (var pi = 0; pi < pasoIds.length; pi++) {
+    var el = document.getElementById(pasoIds[pi]);
+    if (pi === 0) {
+      el.classList.remove('hidden');
+    } else {
+      el.classList.add('hidden');
+    }
+  }
+  document.getElementById('pantalla-resultado').style.display = 'none';
+
+  actualizarIVAInmob();
+  actualizarBloqueHipoteca();
+  actualizarHipotecaSelect();
+
+  // Apertura si/no
+  document.addEventListener('change', function(e) {
+    if (e.target && e.target.name === 'apertura') {
+      var ap = document.querySelector('input[name="apertura"]:checked').value;
+      document.getElementById('fg-pct-apertura').classList.toggle('hidden', ap === 'no');
+    }
+  });
+});
+
+function actualizarIVAInmob() {
+  var precio = parseFloat(document.getElementById('precio').value) || 0;
+  var pct = parseFloat(document.getElementById('pct-inmobiliaria').value) || 0;
+  var base = precio * pct / 100;
+  var iva = base * 0.21;
+  var total = base + iva;
+  var el = document.getElementById('resumen-inmob');
+  if (el && precio > 0) {
+    el.innerHTML = 'Base: <strong>' + fmt(base) + '</strong> &nbsp;+&nbsp; IVA 21%: <strong>' + fmt(iva) + '</strong> &nbsp;= &nbsp;<strong style="color:var(--v)">' + fmt(total) + '</strong> total';
+  } else if (el) {
+    el.innerHTML = 'Introduce el precio de compra en el paso anterior para ver el cálculo.';
+  }
+}
+
+function actualizarHipotecaSelect() {
+  var hip = document.getElementById('hipoteca').value;
+  var bloque = document.getElementById('bloque-hipoteca-gastos');
+  var finSi = document.getElementById('bloque-financiacion-si');
+  var finNo = document.getElementById('bloque-financiacion-no');
+  if (bloque) bloque.classList.toggle('hidden', hip === 'no');
+  if (finSi) finSi.classList.toggle('hidden', hip === 'no');
+  if (finNo) finNo.classList.toggle('hidden', hip === 'si');
+}
+
+function mostrarEmailSiHayTel() {
+  var tel = document.getElementById('tel-viabilidad').value.trim();
+  document.getElementById('bloque-email-viabilidad').classList.toggle('hidden', tel.length < 9);
+}
+
+function actualizarBloqueHipoteca() {
+  var viaAgente = document.querySelector('input[name="via-agente"]:checked');
+  if (!viaAgente) return;
+  var via = viaAgente.value;
+  document.getElementById('bloque-banco-agente').classList.toggle('hidden', via !== 'si');
+  document.getElementById('bloque-coste-estudio').classList.toggle('hidden', via !== 'no');
+
+  // Calcular coste broker dinámico: máximo entre 2500€ y 5% del precio
+  if (via === 'no') {
+    var precio = parseFloat(document.getElementById('precio').value) || 0;
+    var costeBroker = Math.max(2500, precio * 0.025);
+    document.getElementById('imp-estudio-hipoteca').value = Math.round(costeBroker);
+    var txtEl = document.getElementById('txt-coste-broker');
+    if (txtEl) txtEl.textContent = fmt(Math.round(costeBroker));
+  }
+}
+
+async function enviarViabilidad(datos) {
+  try {
+    var url = 'https://script.google.com/macros/s/AKfycbz-EZcbcXPB8sBGxJHmRgoZDcPyxlGH32LrSOO1T0ddVnbDGfR36cnyOI5xxRfpH2vB/exec';
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(datos)
+    });
+    return true;
+  } catch(e) { return false; }
+}
+
+// ── Pasos ──
+function irPaso(n) {
+  if (n === 2 && !validarPaso1()) return;
+  if (n === 4 && !validarPaso2()) return;
+  if (n === 5) { if (!validarPaso4()) return; mostrarRevision(); }
+
+  var pasos = ['paso1','paso2','paso3','paso4','paso5'];
+  for (var i = 0; i < pasos.length; i++) {
+    var el = document.getElementById(pasos[i]);
+    if (i + 1 === n) {
+      el.classList.remove('hidden');
+    } else {
+      el.classList.add('hidden');
+    }
+  }
+  document.getElementById('pantalla-resultado').style.display = 'none';
+  state.paso = n;
+  actualizarSteps(n);
+
+  // Inicializar compradores la primera vez que se llega al paso 4
+  if (n === 4 && document.querySelectorAll('.comprador-block').length === 0) {
+    addComprador();
+  }
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function actualizarSteps(n) {
+  for (var i = 1; i <= 5; i++) {
+    var dot = document.getElementById('sd'+i);
+    dot.classList.remove('active','done');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+  }
+  for (var j = 1; j <= 4; j++) {
+    document.getElementById('sl'+j).classList.toggle('done', j < n);
+  }
+}
+
+// ── Validaciones ──
+function validarPaso1() {
+  var precio = parseFloat(document.getElementById('precio').value);
+  if (!precio || precio < 1000) { alert('Introduce un precio de compra válido.'); return false; }
+  return true;
+}
+function validarPaso2() { return true; }
+function validarPaso4() {
+  var bloques = document.querySelectorAll('.comprador-block');
+  var totalPct = 0;
+  for (var i = 0; i < bloques.length; i++) {
+    var nombre = bloques[i].querySelector('.inp-nombre').value.trim();
+    if (!nombre) { alert('Introduce el nombre del comprador ' + (i+1) + '.'); return false; }
+    totalPct += parseFloat(bloques[i].querySelector('.inp-pct').value) || 0;
+  }
+  if (Math.abs(totalPct - 100) > 0.1) { alert('Los porcentajes deben sumar 100%. Ahora suman ' + totalPct.toFixed(1) + '%.'); return false; }
+  return true;
+}
+
+function redistribuirPorcentajes() {
+  var bloques = document.querySelectorAll('.comprador-block');
+  var n = bloques.length;
+  if (n === 0) return;
+  var pctBase = Math.floor(100 / n);
+  var resto = 100 - pctBase * n;
+  for (var i = 0; i < bloques.length; i++) {
+    var inp = bloques[i].querySelector('.inp-pct');
+    inp.value = pctBase + (i === 0 ? resto : 0);
+  }
+}
+
+// ── Compradores ──
+var compId = 0;
+function addComprador() {
+  compId++;
+  var id = compId;
+  state.compradores.push(id);
+  var lista = document.getElementById('compradores-lista');
+  var div = document.createElement('div');
+  div.className = 'comprador-block';
+  div.id = 'comp-' + id;
+  var numComp = state.compradores.length;
+  var defaultPct = numComp === 1 ? 100 : 50;
+  var showRemove = numComp > 1;
+  div.innerHTML =
+    '<div class="comprador-hdr">' +
+      '<span class="comprador-num">Comprador ' + numComp + '</span>' +
+      (showRemove ? '<button class="btn-remove" onclick="removeComprador(' + id + ')">✕ Eliminar</button>' : '') +
+    '</div>' +
+    '<div class="grid2">' +
+      '<div class="fg"><label>Nombre completo</label><input type="text" class="inp-nombre" placeholder="Nombre y apellidos"></div>' +
+      '<div class="fg"><label>% de adquisición</label><input type="number" class="inp-pct" value="' + defaultPct + '" min="1" max="100" step="0.5"></div>' +
+    '</div>' +
+    '<div class="fg"><label>Edad</label>' +
+      '<select class="sel-edad" style="background:var(--c);border:1.5px solid var(--c2);border-radius:9px;padding:.6rem .9rem;font-size:.95rem;font-family:inherit;color:var(--m);width:100%;">' +
+        '<option value="mayor35">35 años o más</option>' +
+        '<option value="menor35">Menor de 35 años — posible tipo reducido</option>' +
+      '</select>' +
+    '</div>' +
+    '<div class="fg"><label>Perfil especial</label>' +
+      '<div class="chips">' +
+        '<label class="chip"><input type="checkbox" class="chk-fn"><span class="ck"></span> Familia numerosa</label>' +
+        '<label class="chip"><input type="checkbox" class="chk-dis"><span class="ck"></span> Discapacidad ≥ 33%</label>' +
+        '<label class="chip"><input type="checkbox" class="chk-vg"><span class="ck"></span> Víctima VG / terrorismo</label>' +
+        '<label class="chip"><input type="checkbox" class="chk-des"><span class="ck"></span> Municipio despoblación</label>' +
+      '</div>' +
+    '</div>';
+  lista.appendChild(div);
+  redistribuirPorcentajes();
+  renumerarCompradores();
+}
+
+function removeComprador(id) {
+  var idx = state.compradores.indexOf(id);
+  if (idx > -1) state.compradores.splice(idx, 1);
+  document.getElementById('comp-'+id).remove();
+  redistribuirPorcentajes();
+  renumerarCompradores();
+}
+
+function renumerarCompradores() {
+  var bloques = document.querySelectorAll('.comprador-block');
+  for (var i = 0; i < bloques.length; i++) {
+    bloques[i].querySelector('.comprador-num').textContent = 'Comprador ' + (i+1);
+    var btnR = bloques[i].querySelector('.btn-remove');
+    if (bloques.length === 1) { if (btnR) btnR.remove(); }
+    else if (!btnR) {
+      var hdr = bloques[i].querySelector('.comprador-hdr');
+      var btn = document.createElement('button');
+      btn.className = 'btn-remove';
+      var bid = parseInt(bloques[i].id.split('-')[1]);
+      btn.setAttribute('onclick', 'removeComprador(' + bid + ')');
+      btn.textContent = '✕ Eliminar';
+      hdr.appendChild(btn);
+    }
+  }
+}
+
+function leerCompradores() {
+  var resultado = [];
+  var bloques = document.querySelectorAll('.comprador-block');
+  for (var i = 0; i < bloques.length; i++) {
+    var b = bloques[i];
+    var id = parseInt(b.id.split('-')[1]);
+    resultado.push({
+      id: id,
+      nombre: b.querySelector('.inp-nombre').value.trim(),
+      pct: parseFloat(b.querySelector('.inp-pct').value) || 0,
+      edad: b.querySelector('.sel-edad') ? b.querySelector('.sel-edad').value : 'mayor35',
+      famNumerosa: b.querySelector('.chk-fn').checked,
+      discapacidad: b.querySelector('.chk-dis').checked,
+      violencia: b.querySelector('.chk-vg').checked,
+      despoblacion: b.querySelector('.chk-des').checked
+    });
+  }
+  return resultado;
+}
+
+// ── Revisión ──
+function mostrarRevision() {
+  var precio = parseFloat(document.getElementById('precio').value);
+  var tipo = document.getElementById('tipo').value;
+  var hip = document.getElementById('hipoteca').value;
+  var fecha = document.getElementById('fecha').value;
+  var compradores = leerCompradores();
+  var tipoLabels = {segunda:'Segunda mano', nueva:'Obra nueva', vpo:'VPO'};
+  var pctInmob = parseFloat(document.getElementById('pct-inmobiliaria').value) || 3;
+  var baseInmob = Math.round(precio * pctInmob / 100);
+  var totalInmob = Math.round(baseInmob * 1.21);
+  var impNotaria = parseFloat(document.getElementById('imp-notaria').value) || 700;
+  var impRegistro = parseFloat(document.getElementById('imp-registro').value) || 500;
+  var impGestoria = parseFloat(document.getElementById('imp-gestoria').value) || 400;
+  var impNotaSimple = parseFloat(document.getElementById('imp-nota-simple').value) || 10;
+
+  var pctFin = 0, aperturaTxt = '', viabilidadTxt = '';
+  if (hip === 'si') {
+    pctFin = parseFloat(document.getElementById('pct-financiacion').value) || 80;
+    var viaAgente2 = document.querySelector('input[name="via-agente"]:checked');
+    var via2 = viaAgente2 ? viaAgente2.value : 'si';
+    viabilidadTxt = via2 === 'si' ? 'Sí — estudio sin coste' : 'No — coste incluido en cálculo';
+    var aperturaEl = document.querySelector('input[name="apertura"]:checked');
+    var ap = aperturaEl ? aperturaEl.value : 'no';
+    aperturaTxt = ap === 'si' ? (parseFloat(document.getElementById('pct-apertura').value) || 0.5) + '% sobre capital' : 'Sin comisión';
+  }
+
+  var html = '';
+  html += '<strong>Fecha:</strong> ' + new Date(fecha).toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'}) + '<br>';
+  html += '<strong>Precio:</strong> ' + fmt(precio) + '<br>';
+  html += '<strong>Tipo:</strong> ' + tipoLabels[tipo] + ' &nbsp;·&nbsp; ' + (hip==='si'?'Con hipoteca':'Al contado') + '<br>';
+  html += '<br>';
+  html += '<strong>Notaría:</strong> ' + fmt(impNotaria) + ' &nbsp;·&nbsp; <strong>Registro:</strong> ' + fmt(impRegistro) + ' &nbsp;·&nbsp; <strong>Gestoría:</strong> ' + fmt(impGestoria) + '<br>';
+  html += '<strong>Nota simple:</strong> ' + fmt(impNotaSimple) + '<br>';
+  html += '<strong>Honorarios inmobiliaria:</strong> ' + pctInmob + '% = ' + fmt(totalInmob) + ' (IVA incluido)<br>';
+  if (hip === 'si') {
+    html += '<strong>Financiación banco:</strong> ' + pctFin + '% (' + fmt(precio*pctFin/100) + ')<br>';
+    html += '<strong>Estudio viabilidad hipoteca:</strong> ' + viabilidadTxt + '<br>';
+    html += '<strong>Comisión apertura:</strong> ' + aperturaTxt + '<br>';
+  }
+  html += '<br>';
+  for (var i = 0; i < compradores.length; i++) {
+    var c = compradores[i];
+    var perfiles = [];
+    if (c.edad==='menor35') perfiles.push('Menor de 35 años');
+    if (c.famNumerosa) perfiles.push('Familia numerosa');
+    if (c.discapacidad) perfiles.push('Discapacidad ≥33%');
+    if (c.violencia) perfiles.push('Víctima VG/terrorismo');
+    if (c.despoblacion) perfiles.push('Municipio despoblación');
+    html += '<strong>' + c.nombre + '</strong> — ' + c.pct + '% — ' + (perfiles.length ? perfiles.join(', ') : 'Sin perfil especial') + '<br>';
+  }
+  document.getElementById('resumen-revision').innerHTML = html;
+}
+
+// ── Formato ──
+function fmt(n) {
+  return n.toLocaleString('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+}
+
+// ── Tipo ITP ──
+function calcTipoITP(c, precio) {
+  if (c.famNumerosa && precio <= 250000) return { tasa: 0.035, desc: 'Tipo reducido 3,5% — Familia numerosa (vivienda habitual ≤ 250.000 €)', beneficio: true };
+  if (c.discapacidad && precio <= 250000) return { tasa: 0.035, desc: 'Tipo reducido 3,5% — Discapacidad ≥ 33% (vivienda habitual ≤ 250.000 €)', beneficio: true };
+  if ((c.violencia || c.despoblacion) && precio <= 150000) return { tasa: 0.035, desc: 'Tipo reducido 3,5% — Víctima VG/terrorismo o municipio despoblación (≤ 150.000 €)', beneficio: true };
+  if (c.edad === 'menor35' && precio <= 150000) return { tasa: 0.035, desc: 'Tipo reducido 3,5% — Menor de 35 años (vivienda habitual ≤ 150.000 €)', beneficio: true };
+  if (precio <= 150000) return { tasa: 0.06, desc: 'Tipo reducido 6% — Vivienda habitual ≤ 150.000 €', beneficio: true };
+  return { tasa: 0.07, desc: 'Tipo general 7%', beneficio: false };
+}
+
+// ── CÁLCULO PRINCIPAL ──
+function calcular() {
+  var precio = parseFloat(document.getElementById('precio').value);
+  var tipo = document.getElementById('tipo').value;
+  var hip = document.getElementById('hipoteca').value;
+  var compradores = leerCompradores();
+  var pctInmob = parseFloat(document.getElementById('pct-inmobiliaria').value) || 3;
+  var pctFin = hip === 'si' ? (parseFloat(document.getElementById('pct-financiacion').value) || 80) : 0;
+
+  // Vía agente — nueva lógica: SÍ = enviar datos, NO = sumar coste estudio
+  var viaAgente = document.querySelector('input[name="via-agente"]:checked');
+  var viaAgenteVal = viaAgente ? viaAgente.value : 'si';
+  var apertura = 'no';
+  var pctApertura = 0;
+  if (hip === 'si') {
+    var aperturaEl = document.querySelector('input[name="apertura"]:checked');
+    apertura = aperturaEl ? aperturaEl.value : 'no';
+    pctApertura = apertura === 'si' ? (parseFloat(document.getElementById('pct-apertura').value) || 0.5) : 0;
+  }
+
+  // Campos editables
+  var impNotaria = parseFloat(document.getElementById('imp-notaria').value) || 700;
+  var impRegistro = parseFloat(document.getElementById('imp-registro').value) || 500;
+  var impGestoria = parseFloat(document.getElementById('imp-gestoria').value) || 400;
+  var impNotaSimple = parseFloat(document.getElementById('imp-nota-simple').value) || 10;
+  var impTasacion = hip === 'si' ? (parseFloat(document.getElementById('imp-tasacion').value) || 400) : 0;
+
+  var grupos = [];
+  var alertas = [];
+  var totalImpuestos = 0;
+  var totalEscritura = 0;
+  var totalOperacion = 0;
+  var totalHipoteca = 0;
+
+  // ══ IMPUESTOS ══
+  var filasImp = [];
+  if (tipo === 'segunda') {
+    var gastosC = [];
+    for (var ci = 0; ci < compradores.length; ci++) {
+      var c = compradores[ci];
+      var baseC = precio * (c.pct / 100);
+      var itp = calcTipoITP(c, precio);
+      var importe = baseC * itp.tasa;
+      gastosC.push({ nombre: c.nombre, pct: c.pct, tasa: itp.tasa, desc: itp.desc, importe: importe, beneficio: itp.beneficio });
+      if (itp.beneficio) alertas.push({ tipo: 'ok', msg: '✅ ' + c.nombre + ' (' + c.pct + '%): ITP al ' + (itp.tasa*100).toFixed(1) + '% — ahorro de ' + fmt(baseC*(0.07-itp.tasa)) + ' frente al tipo general.' });
+      if (c.edad === 'menor35' && precio > 150000) alertas.push({ tipo: 'aviso', msg: '⚠️ ' + c.nombre + ' es menor de 35 años pero el precio supera 150.000 €. Se aplica el tipo general del 7%.' });
+    }
+    var tasasMap = {};
+    for (var ti = 0; ti < gastosC.length; ti++) { tasasMap[gastosC[ti].tasa] = true; }
+    var tasasUnicas = Object.keys(tasasMap);
+    if (tasasUnicas.length === 1) {
+      var totalITP = 0;
+      for (var tii = 0; tii < gastosC.length; tii++) totalITP += gastosC[tii].importe;
+      filasImp.push({ nombre: 'ITP — Impuesto sobre Transmisiones Patrimoniales', detalle: gastosC[0].desc, importe: totalITP });
+      totalImpuestos += totalITP;
+    } else {
+      for (var gi = 0; gi < gastosC.length; gi++) {
+        filasImp.push({ nombre: 'ITP — ' + gastosC[gi].nombre + ' (' + gastosC[gi].pct + '%, tipo ' + (gastosC[gi].tasa*100).toFixed(1) + '%)', detalle: gastosC[gi].desc, importe: gastosC[gi].importe });
+        totalImpuestos += gastosC[gi].importe;
+      }
+    }
+  } else if (tipo === 'nueva') {
+    var iva = precio * 0.10;
+    filasImp.push({ nombre: 'IVA — Impuesto sobre el Valor Añadido', detalle: 'Tipo general 10% para vivienda de obra nueva (Ley 37/1992)', importe: iva });
+    totalImpuestos += iva;
+    var ajdPorC = [];
+    for (var aci = 0; aci < compradores.length; aci++) {
+      var ac = compradores[aci];
+      var baseAC = precio * (ac.pct / 100);
+      var tasaAJD = 0.012, descAJD = 'Tipo general 1,2%';
+      if (ac.famNumerosa && precio <= 250000) { tasaAJD = 0.001; descAJD = 'Tipo reducido 0,1% — Familia numerosa ≤ 250.000 €'; alertas.push({ tipo: 'ok', msg: '✅ AJD bonificado al 0,1% para ' + ac.nombre + '. Ahorro: ' + fmt(baseAC*(0.012-0.001)) + '.' }); }
+      else if (ac.discapacidad && precio <= 250000) { tasaAJD = 0.001; descAJD = 'Tipo reducido 0,1% — Discapacidad ≥ 33% ≤ 250.000 €'; alertas.push({ tipo: 'ok', msg: '✅ AJD bonificado al 0,1% para ' + ac.nombre + '. Ahorro: ' + fmt(baseAC*(0.012-0.001)) + '.' }); }
+      else if ((ac.edad==='menor35'||ac.violencia||ac.despoblacion) && precio <= 150000) { tasaAJD = 0.003; descAJD = 'Tipo reducido 0,3% — Menor 35/VG/despoblación ≤ 150.000 €'; alertas.push({ tipo: 'ok', msg: '✅ AJD bonificado al 0,3% para ' + ac.nombre + '. Ahorro: ' + fmt(baseAC*(0.012-0.003)) + '.' }); }
+      ajdPorC.push({ tasa: tasaAJD, desc: descAJD, importe: baseAC * tasaAJD });
+    }
+    var totalAJD = 0;
+    for (var aji = 0; aji < ajdPorC.length; aji++) totalAJD += ajdPorC[aji].importe;
+    filasImp.push({ nombre: 'AJD — Actos Jurídicos Documentados', detalle: ajdPorC[0].desc, importe: totalAJD });
+    totalImpuestos += totalAJD;
+  } else if (tipo === 'vpo') {
+    var ivaVPO = precio * 0.04;
+    var ajdVPO = precio * 0.001;
+    filasImp.push({ nombre: 'IVA reducido — VPO', detalle: 'Tipo reducido 4% para VPO de régimen especial o protección pública', importe: ivaVPO });
+    filasImp.push({ nombre: 'AJD — Actos Jurídicos Documentados', detalle: 'Tipo reducido 0,1% aplicable a VPO', importe: ajdVPO });
+    totalImpuestos += ivaVPO + ajdVPO;
+    alertas.push({ tipo: 'ok', msg: '✅ VPO: IVA al 4% en lugar del 10%. Ahorro frente a obra nueva libre: ' + fmt(precio*0.06) + '.' });
+  }
+  grupos.push({ titulo: 'Impuestos', filas: filasImp });
+
+  // ══ ESCRITURA ══
+  totalEscritura = impNotaria + impRegistro;
+  grupos.push({ titulo: 'Gastos de escritura', filas: [
+    { nombre: 'Notaría — Escritura de compraventa', detalle: 'Aranceles notariales regulados (R.D. 1426/1989). Importe introducido manualmente.', importe: impNotaria },
+    { nombre: 'Registro de la Propiedad', detalle: 'Inscripción del título a nombre del nuevo propietario (R.D. 1427/1989). Importe introducido manualmente.', importe: impRegistro }
+  ]});
+
+  // ══ OPERACIÓN ══
+  var baseInmob = Math.round(precio * pctInmob / 100);
+  var ivaInmob = Math.round(baseInmob * 0.21);
+  var totalInmob = baseInmob + ivaInmob;
+  totalOperacion = totalInmob + impGestoria + impNotaSimple;
+  grupos.push({ titulo: 'Gastos de la operación', filas: [
+    { nombre: 'Honorarios inmobiliaria (' + pctInmob + '%) + IVA 21%', detalle: 'Base: ' + fmt(baseInmob) + ' + IVA: ' + fmt(ivaInmob) + '. Verifica el porcentaje con tu inmobiliaria.', importe: totalInmob },
+    { nombre: 'Nota simple del Registro de la Propiedad', detalle: 'Consulta previa para verificar cargas y titularidad antes de la firma.', importe: impNotaSimple },
+    { nombre: 'Gestoría administrativa', detalle: hip==='si' ? 'Tramitación de impuestos, inscripción registral y coordinación con la entidad financiera.' : 'Tramitación de liquidación de impuestos e inscripción registral.', importe: impGestoria }
+  ]});
+
+  // ══ HIPOTECA ══
+  if (hip === 'si') {
+    var filasHip = [];
+    filasHip.push({ nombre: 'Tasación oficial de la vivienda', detalle: 'Valoración por tasador homologado por el Banco de España. Siempre a cargo del comprador (art. 14 Ley 5/2019).', importe: impTasacion });
+    totalHipoteca += impTasacion;
+
+    // Coste estudio hipoteca si no quiere viabilidad gratuita
+    if (viaAgenteVal === 'no') {
+      var impEstudio = parseFloat(document.getElementById('imp-estudio-hipoteca').value) || 3000;
+      filasHip.push({ nombre: 'Estudio / gestión de hipoteca', detalle: 'Honorarios del gestor o broker hipotecario para tramitación de la hipoteca.', importe: impEstudio });
+      totalHipoteca += impEstudio;
+    }
+
+    if (apertura === 'si') {
+      var impApertura = Math.round(precio * pctFin / 100 * pctApertura / 100);
+      filasHip.push({ nombre: 'Comisión de apertura / estudio hipoteca (' + pctApertura + '%)', detalle: 'Calculada sobre el capital solicitado (' + fmt(precio*pctFin/100) + '). Varía según entidad.', importe: impApertura });
+      totalHipoteca += impApertura;
+    } else {
+      filasHip.push({ nombre: 'Comisión de apertura del banco', detalle: 'La entidad financiera no aplica comisión de apertura en esta operación.', importe: 0 });
+    }
+
+    grupos.push({ titulo: 'Gastos hipotecarios — A cargo del comprador', filas: filasHip });
+    alertas.push({ tipo: 'info', msg: 'ℹ️ Desde la Ley 5/2019, la notaría de la hipoteca, su inscripción registral y el AJD hipotecario corren siempre a cargo del banco.' });
+  }
+
+  // ══ TOTALES Y LIQUIDEZ ══
+  var totalGastos = totalImpuestos + totalEscritura + totalOperacion + totalHipoteca;
+  var totalNecesario = precio + totalGastos;
+  var financiacion = Math.round(precio * pctFin / 100);
+  var liquidezNecesaria = totalNecesario - financiacion;
+
+  return {
+    grupos: grupos, alertas: alertas,
+    totalGastos: totalGastos, totalImpuestos: totalImpuestos,
+    totalEscritura: totalEscritura, totalOperacion: totalOperacion, totalHipoteca: totalHipoteca,
+    precio: precio, tipo: tipo, hip: hip, compradores: compradores,
+    pctInmob: pctInmob, pctFin: pctFin, financiacion: financiacion,
+    totalNecesario: totalNecesario, liquidezNecesaria: liquidezNecesaria,
+    viaAgenteVal: viaAgenteVal
+  };
+}
+
+// ── Mostrar resultado ──
+function calcularYMostrar() {
+  if (!validarPaso4()) return;
+  var res = calcular();
+  renderResultado(res);
+  var pasos = ['paso1','paso2','paso3','paso4','paso5'];
+  for (var i = 0; i < pasos.length; i++) document.getElementById(pasos[i]).classList.add('hidden');
+  var pantalla = document.getElementById('pantalla-resultado');
+  pantalla.style.display = 'block';
+  actualizarSteps(6);
+  window.scrollTo({top:0,behavior:'smooth'});
+  window._lastResult = res;
+
+  // Enviar a Formspree si quiere viabilidad hipoteca
+  if (res.hip === 'si' && res.viaAgenteVal === 'si') {
+    var emailEl = document.getElementById('email-viabilidad');
+    var email = emailEl ? emailEl.value.trim() : '';
+    var telViabilidadEl = document.getElementById('tel-viabilidad');
+    var telViabilidad = telViabilidadEl ? telViabilidadEl.value.trim() : '';
+    var fecha = document.getElementById('fecha').value;
+    var tipoLabels = {segunda:'Segunda mano', nueva:'Obra nueva', vpo:'VPO'};
+    var telCliente = telViabilidad;
+    var compradores = res.compradores.map(function(c) {
+      return c.nombre + ' (' + c.pct + '%)';
+    }).join(', ');
+    var datos = {
+      _subject: 'Estudio viabilidad hipoteca — ' + fmt(res.precio),
+      canal_origen: CANAL_ORIGEN || 'Directo',
+      movil: telViabilidad,
+      email: email,
+      precio: fmt(res.precio),
+      tipo_vivienda: tipoLabels[res.tipo] || res.tipo,
+      financiacion_solicitada: fmt(res.financiacion) + ' (' + res.pctFin + '%)',
+      liquidez_necesaria: fmt(res.liquidezNecesaria),
+      total_gastos: fmt(res.totalGastos),
+      compradores: compradores,
+      fecha: fecha
+    };
+    enviarViabilidad(datos).then(function(ok) {
+      var aviso = document.getElementById('aviso-viabilidad-enviado');
+      if (aviso) aviso.style.display = ok ? 'block' : 'none';
+    });
+  }
+}
+
+function actualizarSteps(n) {
+  for (var i = 1; i <= 5; i++) {
+    var dot = document.getElementById('sd'+i);
+    dot.classList.remove('active','done');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+  }
+  for (var j = 1; j <= 4; j++) {
+    document.getElementById('sl'+j).classList.toggle('done', j < n);
+  }
+}
+
+function renderResultado(res) {
+  var fecha = document.getElementById('fecha').value;
+  var fechaFmt = new Date(fecha).toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'});
+  var tipoLabels = {segunda:'Segunda mano', nueva:'Obra nueva', vpo:'VPO'};
+  var pct = (res.totalGastos / res.precio * 100).toFixed(1);
+
+  var html = '';
+
+  // ── Hero con liquidez ──
+  var liqNeg = res.liquidezNecesaria < 0;
+  html += '<div class="res-hero">';
+  html += '<div class="res-hero-top">';
+  html += '<div><div class="label">Total gastos de la operación</div><div class="total">' + fmt(res.totalGastos) + '</div><div class="sub">~' + pct + '% sobre el precio de compra</div></div>';
+  html += '<div><div class="pct-badge">' + fmt(res.totalGastos) + '</div><div class="pct-label">en gastos totales</div></div>';
+  html += '</div>';
+
+  html += '<div class="liquidez-box">';
+  html += '<div class="liq-title">📊 Cálculo de liquidez necesaria</div>';
+  html += '<div class="liq-row"><span>Precio de compra</span><span class="liq-val">' + fmt(res.precio) + '</span></div>';
+  html += '<div class="liq-row"><span>+ Total gastos</span><span class="liq-val">' + fmt(res.totalGastos) + '</span></div>';
+  html += '<div class="liq-row sep"><span>= Total necesario</span><span class="liq-val">' + fmt(res.totalNecesario) + '</span></div>';
+  if (res.hip === 'si') {
+    html += '<div class="liq-row"><span>− Financiación banco (' + res.pctFin + '%)</span><span class="liq-val neg">− ' + fmt(res.financiacion) + '</span></div>';
+  }
+  html += '<div class="liq-row sep total-liq"><span>💰 Necesitas tener</span><span class="liq-val">' + fmt(res.liquidezNecesaria) + '</span></div>';
+  html += '</div>';
+  html += '</div>';
+
+  // ── Tags ──
+  html += '<div class="op-info">';
+  html += '<span class="op-tag"><strong>Fecha:</strong> ' + fechaFmt + '</span>';
+  html += '<span class="op-tag"><strong>Tipo:</strong> ' + tipoLabels[res.tipo] + '</span>';
+  html += '<span class="op-tag">' + (res.hip==='si'?'Con hipoteca':'Al contado') + '</span>';
+  for (var ci = 0; ci < res.compradores.length; ci++) {
+    html += '<span class="op-tag"><strong>' + res.compradores[ci].nombre + '</strong> ' + res.compradores[ci].pct + '%</span>';
+  }
+  html += '</div>';
+
+  // ── Alertas ──
+  if (res.alertas.length > 0) {
+    html += '<div class="alertas">';
+    for (var ai = 0; ai < res.alertas.length; ai++) {
+      html += '<div class="alerta ' + res.alertas[ai].tipo + '">' + res.alertas[ai].msg + '</div>';
+    }
+    html += '</div>';
+  }
+
+  // ── Aviso viabilidad hipoteca ──
+  if (res.hip === 'si' && res.viaAgenteVal === 'si') {
+    html += '<div id="aviso-viabilidad-enviado" class="alerta ok" style="display:none;">✅ <strong>Datos enviados correctamente.</strong> Nos pondremos en contacto contigo para estudiar la viabilidad de tu hipoteca sin coste.</div>';
+  }
+
+  // ── Desglose por grupos ──
+  for (var gri = 0; gri < res.grupos.length; gri++) {
+    var g = res.grupos[gri];
+    html += '<div class="grupo"><div class="grupo-hdr">' + g.titulo + '</div><div class="grupo-body">';
+    for (var fi = 0; fi < g.filas.length; fi++) {
+      var f = g.filas[fi];
+      var cero = f.importe === 0;
+      html += '<div class="gasto-row">';
+      html += '<div class="gasto-info"><div class="gasto-nombre">' + f.nombre + '</div><div class="gasto-detalle">' + f.detalle + '</div></div>';
+      html += '<div class="gasto-importe ' + (cero?'cero':'') + '">' + (cero ? '— Sin coste' : fmt(f.importe)) + '</div>';
+      html += '</div>';
+    }
+    var subG = 0;
+    for (var si = 0; si < g.filas.length; si++) subG += g.filas[si].importe || 0;
+    if (g.filas.length > 1 && subG > 0) html += '<div class="subtotal-grupo">Subtotal: ' + fmt(subG) + '</div>';
+    html += '</div></div>';
+  }
+
+  // ── Nota legal ──
+  html += '<div class="nota"><strong>NOTA LEGAL:</strong> Los importes indicados son estimaciones orientativas con base en la normativa vigente de la Junta de Andalucía (Decreto Legislativo 1/2018) y la legislación estatal aplicable. Los honorarios de inmobiliaria son orientativos y deben confirmarse con la agencia. Los gastos de notaría y registro están sujetos a aranceles oficiales. Los tipos impositivos reducidos están condicionados al cumplimiento de los requisitos legales. Se recomienda consultar con asesor fiscal antes de formalizar la operación.</div>';
+
+  // ── Botones ──
+  var telCliente = document.getElementById('tel-viabilidad').value.trim().replace(/\s/g,'');
+  var waDisabled = !telCliente ? 'disabled' : '';
+  html += '<div class="acciones">';
+  html += '<button class="btn-pdf" onclick="generarPDF()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> Descargar PDF</button>';
+  html += '<button class="btn-wa" onclick="enviarWhatsApp()" ' + waDisabled + '><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Enviar por WhatsApp</button>';
+  html += '</div>';
+  html += '<button class="btn-nueva-full" onclick="nuevaConsulta()">← Nueva consulta</button>';
+
+  document.getElementById('pantalla-resultado').innerHTML = html;
+}
+
+function nuevaConsulta() {
+  document.getElementById('pantalla-resultado').style.display = 'none';
+  document.getElementById('paso1').classList.remove('hidden');
+  actualizarSteps(1);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── Generar PDF ──
+function generarPDF() {
+  var jsPDFLib = window.jspdf;
+  var doc = new jsPDFLib.jsPDF({ unit: 'mm', format: 'a4' });
+  var res = window._lastResult;
+  if (!res) return;
+
+  var tipoLabels = {segunda:'Segunda mano', nueva:'Obra nueva', vpo:'VPO'};
+  var tipoLabel = tipoLabels[res.tipo];
+  var fecha = document.getElementById('fecha').value;
+  var fechaFmt = new Date(fecha).toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'});
+  var pct = (res.totalGastos / res.precio * 100).toFixed(1);
+  var lm = 14, rm = 196, cw = rm - lm;
+  var y = 0;
+
+  // Cabecera
+  doc.setFillColor(26,107,69); doc.rect(0,0,210,34,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text('CALCULADORA DE COMPRAVENTA', lm, 11);
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('Estimacion de gastos y liquidez necesaria - Andalucia 2025-2026', lm, 17);
+  doc.setTextColor(200,240,215);
+  doc.text('Agente: ' + AGENTE_NOMBRE + ' - ' + AGENTE_TEL, lm, 23);
+  doc.text('Fecha: ' + fechaFmt, rm, 23, {align:'right'});
+
+  y = 40;
+
+  // Datos operación
+  doc.setFillColor(245,240,232); doc.roundedRect(lm,y,cw,16,2,2,'F');
+  doc.setTextColor(107,98,89); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text('Precio', lm+3, y+5); doc.text('Tipo', lm+45, y+5); doc.text('Financiacion', lm+90, y+5); doc.text('Compradores', lm+140, y+5);
+  doc.setTextColor(30,20,9); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text(fmt(res.precio), lm+3, y+12);
+  doc.setFontSize(8);
+  doc.text(tipoLabel, lm+45, y+12);
+  doc.text(res.hip==='si'?'Con hipoteca - '+res.pctFin+'%':'Al contado', lm+90, y+12);
+  var nomCompr = '';
+  for (var ci=0; ci<res.compradores.length; ci++) nomCompr += (ci>0?', ':'')+res.compradores[ci].nombre+' ('+res.compradores[ci].pct+'%)';
+  doc.text(nomCompr, lm+140, y+12, {maxWidth:50});
+  y += 22;
+
+  // Caja liquidez
+  doc.setFillColor(26,107,69); doc.roundedRect(lm,y,cw,36,2,2,'F');
+  doc.setTextColor(200,235,215); doc.setFontSize(7); doc.setFont('helvetica','bold');
+  doc.text('CALCULO DE LIQUIDEZ NECESARIA', lm+3, y+6);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+  var ly = y+12;
+  doc.setTextColor(255,255,255);
+  doc.text('Precio de compra:', lm+3, ly); doc.text(fmt(res.precio), rm, ly, {align:'right'}); ly+=6;
+  doc.text('+ Total gastos:', lm+3, ly); doc.text(fmt(res.totalGastos), rm, ly, {align:'right'}); ly+=6;
+  doc.setDrawColor(255,255,255); doc.setLineWidth(0.3); doc.line(lm+3, ly-1, rm, ly-1);
+  doc.text('= Total necesario:', lm+3, ly+1); doc.text(fmt(res.totalNecesario), rm, ly+1, {align:'right'}); ly+=6;
+  if (res.hip === 'si') { doc.setTextColor(180,240,200); doc.text('- Financiacion banco ('+res.pctFin+'%):', lm+3, ly); doc.text('- '+fmt(res.financiacion), rm, ly, {align:'right'}); ly+=6; }
+  doc.setDrawColor(255,220,100); doc.line(lm+3, ly-1, rm, ly-1);
+  doc.setTextColor(255,220,80); doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text('NECESITAS TENER:', lm+3, ly+1); doc.text(fmt(res.liquidezNecesaria), rm, ly+1, {align:'right'});
+  y += 42;
+
+  // Grupos
+  for (var gri=0; gri<res.grupos.length; gri++) {
+    var g = res.grupos[gri];
+    var lh = 8.5;
+    if (y + 7 + g.filas.length*lh + 6 > 278) { doc.addPage(); y = 14; }
+    doc.setFillColor(230,244,236); doc.rect(lm,y,cw,6,'F');
+    doc.setTextColor(26,107,69); doc.setFontSize(7); doc.setFont('helvetica','bold');
+    doc.text(g.titulo.toUpperCase(), lm+3, y+4); y+=6;
+    for (var fi=0; fi<g.filas.length; fi++) {
+      if (y+lh > 278) { doc.addPage(); y=14; }
+      var f = g.filas[fi];
+      if (fi%2===0) { doc.setFillColor(253,250,245); } else { doc.setFillColor(248,246,240); }
+      doc.rect(lm,y,cw,lh,'F');
+      doc.setTextColor(30,20,9); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+      doc.text(f.nombre, lm+3, y+3.5, {maxWidth:cw*0.55});
+      doc.setTextColor(107,98,89); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
+      var det = doc.splitTextToSize(f.detalle, cw*0.38);
+      doc.text(det[0]||'', lm+cw*0.57, y+3.5);
+      var cero = f.importe===0;
+      if (cero) { doc.setTextColor(150,140,130); } else { doc.setTextColor(26,107,69); }
+      doc.setFontSize(8); doc.setFont('helvetica','bold');
+      doc.text(cero?'Sin coste':fmt(f.importe), rm, y+5.5, {align:'right'});
+      doc.setDrawColor(234,227,213); doc.setLineWidth(0.2); doc.line(lm,y+lh,rm,y+lh);
+      y+=lh;
+    }
+    var sub=0; for (var si=0;si<g.filas.length;si++) sub+=g.filas[si].importe||0;
+    if (g.filas.length>1 && sub>0) { doc.setFillColor(240,250,244); doc.rect(lm,y,cw,5,'F'); doc.setTextColor(26,107,69); doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.text('Subtotal: '+fmt(sub), rm, y+3.5, {align:'right'}); y+=5; }
+    y+=3;
+  }
+
+  // Alertas
+  if (res.alertas.length > 0) {
+    var altH = res.alertas.length*6+8;
+    if (y+altH>278) { doc.addPage(); y=14; }
+    doc.setFillColor(230,244,236); doc.roundedRect(lm,y,cw,altH,2,2,'F');
+    doc.setTextColor(26,107,69); doc.setFontSize(7); doc.setFont('helvetica','bold');
+    doc.text('OBSERVACIONES Y BENEFICIOS FISCALES', lm+3, y+5); y+=8;
+    for (var aii=0; aii<res.alertas.length; aii++) {
+      var txt = res.alertas[aii].msg.replace(/[\u2705\u26a0\ufe0f\u2139\ufe0f]\s*/g,'');
+      doc.setTextColor(29,82,56); doc.setFontSize(7); doc.setFont('helvetica','normal');
+      var al = doc.splitTextToSize('> '+txt, cw-6);
+      doc.text(al, lm+3, y); y+=al.length*4;
+    }
+    y+=4;
+  }
+
+  // Nota legal
+  if (y+16>278) { doc.addPage(); y=14; }
+  doc.setFillColor(30,20,9); doc.roundedRect(lm,y,cw,16,2,2,'F');
+  doc.setTextColor(150,140,130); doc.setFontSize(6); doc.setFont('helvetica','bold');
+  doc.text('NOTA LEGAL', lm+3, y+4);
+  doc.setFont('helvetica','normal');
+  var nota = 'Estimacion orientativa basada en la normativa vigente de la Junta de Andalucia (Decreto Legislativo 1/2018) y legislacion estatal. Los honorarios de inmobiliaria son orientativos. Los gastos de notaria y registro estan sujetos a aranceles oficiales. Los tipos reducidos estan condicionados al cumplimiento de requisitos legales. Consultar con asesor fiscal antes de formalizar la operacion.';
+  var nl = doc.splitTextToSize(nota, cw-6);
+  doc.text(nl, lm+3, y+8);
+
+  var nombreBase = res.compradores.length===1 ? res.compradores[0].nombre.split(' ')[0] : 'varios-compradores';
+  doc.save('compraventa-' + nombreBase + '.pdf');
+}
+
+// ── WhatsApp ──
+function enviarWhatsApp() {
+  var res = window._lastResult;
+  if (!res) return;
+  var tipoLabels = {segunda:'Segunda mano', nueva:'Obra nueva', vpo:'VPO'};
+  var fecha = document.getElementById('fecha').value;
+  var fechaFmt = new Date(fecha).toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'});
+  var pct = (res.totalGastos / res.precio * 100).toFixed(1);
+
+  var tel = document.getElementById('tel-viabilidad').value.trim().replace(/[\s\-\(\)]/g,'');
+  if (tel.indexOf('+') !== 0) tel = '+34' + tel;
+
+  var nomCompr = '';
+  for (var ci=0; ci<res.compradores.length; ci++) nomCompr += (ci>0?', ':'')+res.compradores[ci].nombre+' ('+res.compradores[ci].pct+'%)';
+
+  var msg = '';
+  msg += '🏡 *CALCULADORA DE COMPRAVENTA*\n';
+  msg += '_Andalucía · Normativa 2025–2026_\n\n';
+  msg += '📅 ' + fechaFmt + '\n';
+  msg += '💶 Precio: ' + fmt(res.precio) + '\n';
+  msg += '🏠 ' + tipoLabels[res.tipo] + ' · ' + (res.hip==='si'?'Con hipoteca':'Al contado') + '\n';
+  msg += '👤 ' + nomCompr + '\n\n';
+  msg += '*📊 LIQUIDEZ NECESARIA*\n';
+  msg += '  Precio de compra: ' + fmt(res.precio) + '\n';
+  msg += '  + Gastos totales: ' + fmt(res.totalGastos) + '\n';
+  msg += '  = Total necesario: ' + fmt(res.totalNecesario) + '\n';
+  if (res.hip === 'si') msg += '  - Financiación banco (' + res.pctFin + '%): ' + fmt(res.financiacion) + '\n';
+  msg += '  💰 *Necesitas tener: ' + fmt(res.liquidezNecesaria) + '*\n\n';
+  msg += '*DESGLOSE DE GASTOS (~' + pct + '%)*\n';
+  for (var gri=0; gri<res.grupos.length; gri++) {
+    var g = res.grupos[gri];
+    msg += '\n*' + g.titulo + '*\n';
+    for (var fi=0; fi<g.filas.length; fi++) {
+      var f = g.filas[fi];
+      msg += '  · ' + f.nombre + ': ' + (f.importe===0?'Sin coste':fmt(f.importe)) + '\n';
+    }
+  }
+  msg += '\n─────────────────────\n';
+  msg += '💰 *TOTAL GASTOS: ' + fmt(res.totalGastos) + '*\n\n';
+  msg += '📎 El PDF detallado se ha descargado en tu dispositivo.\n\n';
+  msg += 'Agente: ' + AGENTE_NOMBRE + ' · ' + AGENTE_TEL;
+
+  generarPDF();
+  setTimeout(function() {
+    window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+  }, 800);
+}
+</script>
+</body>
+</html>
