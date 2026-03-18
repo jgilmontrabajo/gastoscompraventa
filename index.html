@@ -465,6 +465,10 @@ var CANAL_ORIGEN = '';
   if (params.get('logo')) {
     var logoImg = document.getElementById('hdr-logo-img');
     var logoUrl = params.get('logo');
+    // Si la ruta es relativa, añadir base de GitHub Pages
+    if (logoUrl.indexOf('http') !== 0) {
+      logoUrl = '/gastoscompraventa' + (logoUrl.indexOf('/') === 0 ? '' : '/') + logoUrl;
+    }
     logoImg.style.display = 'block';
     logoImg.onerror = function() {
       if (this.src.indexOf('wsrv.nl') === -1) {
